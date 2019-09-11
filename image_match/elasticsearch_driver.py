@@ -65,7 +65,6 @@ class SignatureES(SignatureDatabaseBase):
             body['query']['bool']['filter'] = pre_filter
 
         res = self.es.search(index=self.index,
-                              doc_type=self.doc_type,
                               body=body,
                               size=self.size,
                               timeout=self.timeout)['hits']['hits']

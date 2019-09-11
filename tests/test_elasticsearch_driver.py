@@ -18,22 +18,6 @@ urlretrieve(test_img_url2, 'test2.jpg')
 
 INDEX_NAME = 'test_environment_{}'.format(hashlib.md5(os.urandom(128)).hexdigest()[:12])
 DOC_TYPE = 'image'
-MAPPINGS = {
-  "mappings": {
-    DOC_TYPE: {
-      "dynamic": True,
-      "properties": {
-        "metadata": {
-            "type": "object",
-            "dynamic": True,
-            "properties": {
-                "tenant_id": { "type": "keyword" }
-            }
-        }
-      }
-    }
-  }
-}
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -44,7 +28,7 @@ def index_name():
 def setup_index(request, index_name):
     es = Elasticsearch()
     try:
-        es.indices.create(index=index_name, body=MAPPINGS)
+        es.indices.create(index=index_name)
     except RequestError as e:
         if e.error == u'index_already_exists_exception':
             es.indices.delete(index_name)
@@ -176,29 +160,6 @@ def test_add_image_with_metadata(ses):
     assert 'score' in r[0]
     assert 'dist' in r[0]
     assert 'id' in r[0]
-
-
-def test_lookup_with_filter_by_metadata(ses):
-    metadata = dict(
-            tenant_id='foo'
-    )
-    ses.add_image('test1.jpg', metadata=metadata, refresh_after=True)
-
-    metadata2 = dict(
-            tenant_id='bar-2'
-    )
-    ses.add_image('test2.jpg', metadata=metadata2, refresh_after=True)
-
-    r = ses.search_image('test1.jpg', pre_filter={"term": {"metadata.tenant_id": "foo"}})
-    assert len(r) == 1
-    assert r[0]['metadata'] == metadata
-
-    r = ses.search_image('test1.jpg', pre_filter={"term": {"metadata.tenant_id": "bar-2"}})
-    assert len(r) == 1
-    assert r[0]['metadata'] == metadata2
-
-    r = ses.search_image('test1.jpg', pre_filter={"term": {"metadata.tenant_id": "bar-3"}})
-    assert len(r) == 0
 
 
 def test_all_orientations(ses):

@@ -3,6 +3,8 @@ from itertools import product
 from operator import itemgetter
 import numpy as np
 
+from image_match.imagehash_signature import ImageHashSignature
+
 
 class SignatureDatabaseBase(object):
     """Base class for storing and searching image signatures in a database
@@ -116,8 +118,9 @@ class SignatureDatabaseBase(object):
         """
         raise NotImplementedError
 
-    def __init__(self, k=16, N=63, n_grid=9,
-                 crop_percentile=(5, 95), distance_cutoff=0.45,
+    def __init__(self, k=1, N=63, n_grid=9,
+                 crop_percentile=(5, 95), distance_cutoff=0.3,
+                 signature_cls=ImageHashSignature,
                  *signature_args, **signature_kwargs):
         """Set up storage scheme for images
 
@@ -185,7 +188,7 @@ class SignatureDatabaseBase(object):
 
         self.crop_percentile = crop_percentile
 
-        self.gis = ImageSignature(n=n_grid, crop_percentiles=crop_percentile, *signature_args, **signature_kwargs)
+        self.gis = signature_cls(n=n_grid, crop_percentiles=crop_percentile, *signature_args, **signature_kwargs)
 
     def add_image(self, path, img=None, bytestream=False, metadata=None, refresh_after=False):
         """Add a single image to the database

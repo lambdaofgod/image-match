@@ -3,6 +3,7 @@ from .signature_database_base import normalized_distance
 from datetime import datetime
 import numpy as np
 from collections import deque
+from scipy.spatial import distance
 
 
 class SignatureES(SignatureDatabaseBase):
@@ -74,7 +75,8 @@ class SignatureES(SignatureDatabaseBase):
         if sigs.size == 0:
             return []
 
-        dists = normalized_distance(sigs, np.array(signature))
+        normalized_dists = normalized_distance(sigs, np.array(signature))
+        dists = distance.cdist(sigs, np.array(signature).reshape(1, -1)).reshape(-1)
 
         formatted_res = [{'id': x['_id'],
                           'score': x['_score'],
@@ -84,7 +86,8 @@ class SignatureES(SignatureDatabaseBase):
 
         for i, row in enumerate(formatted_res):
             row['dist'] = dists[i]
-        formatted_res = filter(lambda y: y['dist'] < self.distance_cutoff, formatted_res)
+            row['normalized_dist'] = normalized_dists[i]
+        formatted_res = filter(lambda y: y['normalized_dist'] < self.distance_cutoff, formatted_res)
 
         return formatted_res
 

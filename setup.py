@@ -91,6 +91,7 @@ setup(
         'scikit-image>=0.14',
         'elasticsearch>=5.0.0',
         'six>=1.11.0',
+        'imagehash==4.0'
     ],
     tests_require=tests_require,
     extras_require={
